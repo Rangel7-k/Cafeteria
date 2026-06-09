@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cafetería — Sistema de Gestión</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f5f5f0;color:#1a1a18;min-height:100vh}
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#fff8f5 0%,#f5f5f0 100%)}
+.login-card{background:#fff;border:1px solid #eee;border-radius:16px;padding:40px 36px;width:100%;max-width:380px}
+.login-logo{text-align:center;margin-bottom:28px}
+.login-logo i{font-size:40px;color:#D85A30;display:block;margin-bottom:8px}
+.login-logo h1{font-size:22px;font-weight:700;color:#1a1a18}
+.login-logo p{font-size:13px;color:#888;margin-top:4px}
+.role-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:24px}
+.role-tab{padding:10px;border:1px solid #ddd;border-radius:8px;cursor:pointer;text-align:center;font-size:13px;font-weight:500;color:#888;transition:all 0.15s;background:#fff}
+.role-tab:hover{border-color:#D85A30;color:#D85A30}
+.role-tab.active{border-color:#D85A30;background:#fdf5f2;color:#D85A30}
+.role-tab i{display:block;font-size:22px;margin-bottom:4px}
+.login-hint{font-size:11px;color:#aaa;text-align:center;margin-top:8px}
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:210px;border-right:1px solid #ddd;background:#fff;display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-header{padding:16px;border-bottom:1px solid #eee}
+.sidebar-header h2{font-size:14px;font-weight:600;color:#1a1a18}
+.sidebar-header p{font-size:11px;color:#888;margin-top:2px}
+.user-badge{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #eee;background:#fafaf8}
+.user-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.avatar-admin{background:#fdf5f2;color:#D85A30}
+.avatar-worker{background:#EAF3DE;color:#3B6D11}
+.user-info{flex:1;min-width:0}
+.user-info .uname{font-size:13px;font-weight:500;color:#1a1a18}
+.user-info .urole{font-size:11px;color:#888}
+.btn-logout{padding:5px 8px;border:1px solid #eee;border-radius:6px;background:#fff;cursor:pointer;color:#888;font-size:12px;transition:all 0.15s}
+.btn-logout:hover{border-color:#A32D2D;color:#A32D2D}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;font-size:13px;color:#666;border-left:3px solid transparent;transition:all 0.15s;user-select:none}
+.nav-item:hover{background:#fdf9f7;color:#1a1a18}
+.nav-item.active{background:#fdf5f2;color:#D85A30;border-left-color:#D85A30;font-weight:500}
+.nav-item i{font-size:17px}
+.nav-section{padding:8px 16px 4px;font-size:10px;font-weight:700;color:#bbb;letter-spacing:0.08em;text-transform:uppercase;margin-top:4px}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#f5f5f0}
+.topbar{padding:14px 24px;border-bottom:1px solid #e0dfd8;background:#fff;display:flex;align-items:center;justify-content:space-between}
+.topbar h1{font-size:16px;font-weight:600;color:#1a1a18}
+.content{flex:1;overflow-y:auto;padding:24px}
+.panel{display:none}
+.panel.active{display:block}
+.cards-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.metric-card{background:#fff;border-radius:10px;padding:16px;border:1px solid #eee}
+.metric-card .label{font-size:12px;color:#888;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.metric-card .value{font-size:24px;font-weight:600;color:#1a1a18}
+.section-title{font-size:14px;font-weight:600;color:#1a1a18;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.table-wrap{background:#fff;border:1px solid #eee;border-radius:10px;overflow:hidden}
+.search-bar{padding:10px 14px;border-bottom:1px solid #eee;background:#fafaf8;display:flex;align-items:center;gap:8px}
+.search-bar i{color:#aaa;font-size:16px;flex-shrink:0}
+.search-bar input{border:none;background:transparent;outline:none;font-size:13px;color:#1a1a18;width:100%}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead tr{background:#fafaf8}
+th{padding:11px 16px;text-align:left;font-weight:600;color:#888;font-size:12px;border-bottom:1px solid #eee}
+td{padding:11px 16px;color:#1a1a18;border-top:1px solid #f0efeb}
+tr:hover td{background:#fdf9f7}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:12px;font-weight:500;color:#555;margin-bottom:6px}
+.form-group input,.form-group select{width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;background:#fff;color:#1a1a18;outline:none;transition:border-color 0.15s}
+.form-group input:focus,.form-group select:focus{border-color:#D85A30}
+.btn{padding:9px 18px;border-radius:8px;font-size:13px;cursor:pointer;border:1px solid #ddd;background:#fff;color:#1a1a18;transition:all 0.15s;display:inline-flex;align-items:center;gap:6px;font-weight:500}
+.btn:hover{background:#f5f5f0}
+.btn-primary{background:#D85A30;color:#fff;border-color:#D85A30}
+.btn-primary:hover{background:#993C1D;border-color:#993C1D}
+.btn-danger{background:#fff;color:#A32D2D;border-color:#f0c0c0}
+.btn-danger:hover{background:#FCEBEB}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-full{width:100%;justify-content:center}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-success{background:#EAF3DE;color:#3B6D11}
+.badge-warn{background:#FAEEDA;color:#854F0B}
+.badge-danger{background:#FCEBEB;color:#A32D2D}
+.badge-worker{background:#EAF3DE;color:#3B6D11}
+.badge-anulado{background:#FCEBEB;color:#A32D2D}
+.badge-activo{background:#EAF3DE;color:#3B6D11}
+.prod-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.prod-card{background:#fff;border:1px solid #eee;border-radius:10px;padding:16px;transition:all 0.15s}
+.prod-card:hover{border-color:#D85A30;transform:translateY(-1px)}
+.prod-icon{width:40px;height:40px;border-radius:8px;background:#fdf5f2;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+.prod-icon i{font-size:20px;color:#D85A30}
+.prod-name{font-size:13px;font-weight:600;color:#1a1a18}
+.prod-price{font-size:15px;color:#D85A30;margin-top:4px;font-weight:600}
+.prod-stock{font-size:11px;color:#888;margin-top:3px}
+.prod-actions{display:flex;gap:6px;margin-top:10px}
+.resumen-box{background:#fdf5f2;border:1px solid #f5c4b3;border-radius:8px;padding:14px;margin-top:14px;display:none}
+.resumen-box .total{font-size:20px;font-weight:700;color:#D85A30;margin-top:6px}
+.factura-box{background:#fff;border:1px solid #eee;border-radius:12px;padding:24px;max-width:500px;margin:0 auto}
+.factura-header{text-align:center;border-bottom:1px solid #eee;padding-bottom:16px;margin-bottom:16px}
+.factura-header h2{font-size:20px;font-weight:700;color:#D85A30}
+.factura-header p{font-size:12px;color:#888;margin-top:4px}
+.factura-total{background:#fdf5f2;border-radius:8px;padding:14px;text-align:right;margin-top:14px}
+.factura-total .lbl{font-size:12px;color:#993C1D;font-weight:500}
+.factura-total .amt{font-size:26px;font-weight:700;color:#D85A30}
+.factura-actions{display:flex;gap:8px;justify-content:center;margin-top:16px}
+.empty-state{text-align:center;padding:40px;color:#aaa;font-size:13px}
+.empty-state i{font-size:40px;display:block;margin-bottom:10px;opacity:0.35}
+.access-denied{text-align:center;padding:60px 20px}
+.access-denied i{font-size:48px;color:#ddd;display:block;margin-bottom:16px}
+.access-denied h3{font-size:16px;font-weight:500;color:#888}
+.access-denied p{font-size:13px;color:#aaa;margin-top:6px}
+.toast{position:fixed;bottom:24px;right:24px;background:#1a1a18;color:#fff;padding:11px 18px;border-radius:8px;font-size:13px;font-weight:500;opacity:0;pointer-events:none;transition:opacity 0.3s;z-index:999;display:flex;align-items:center;gap:8px}
+.toast.show{opacity:1}
+.toast.ok i{color:#7dc55e}
+.toast.err i{color:#f09595}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;z-index:900;display:none}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:12px;padding:28px;width:100%;max-width:400px;border:1px solid #eee}
+.modal h3{font-size:16px;font-weight:600;margin-bottom:20px;color:#1a1a18}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.row-anulado td{opacity:0.5;text-decoration:line-through}
+.row-anulado td:last-child,.row-anulado td:nth-last-child(2){text-decoration:none;opacity:1}
+.motivo-tag{display:inline-block;background:#fff8f5;border:1px solid #f5c4b3;color:#993C1D;padding:2px 8px;border-radius:4px;font-size:11px;font-style:italic}
+/* REPORTE */
+.reporte-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.reporte-card{background:#fff;border:1px solid #eee;border-radius:10px;padding:16px}
+.reporte-card .rname{font-size:13px;font-weight:600;color:#1a1a18;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.reporte-card .rname .avatar{width:28px;height:28px;border-radius:50%;background:#fdf5f2;color:#D85A30;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.reporte-stat{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid #f5f5f0}
+.reporte-stat:last-child{border-bottom:none}
+.reporte-stat .sk{color:#888}
+.reporte-stat .sv{font-weight:600;color:#1a1a18}
+/* PRINT */
+@media print{
+  .sidebar,.topbar,.factura-actions,.btn,.nav-item{display:none!important}
+  .app{display:block;height:auto}
+  .main{overflow:visible}
+  .content{padding:0}
+  .panel{display:none!important}
+  #print-area{display:block!important}
+  body{background:#fff}
+}
+#print-area{display:none}
+</style>
+</head>
+<body>
+
+<div id="login-screen" class="login-wrap">
+  <div class="login-card">
+    <div class="login-logo">
+      <i class="ti ti-coffee"></i>
+      <h1>Cafetería</h1>
+      <p>Sistema de gestión</p>
+    </div>
+    <div class="role-tabs">
+      <div class="role-tab active" id="tab-admin" onclick="selectRole('admin')"><i class="ti ti-shield-check"></i>Administrador</div>
+      <div class="role-tab" id="tab-worker" onclick="selectRole('worker')"><i class="ti ti-user"></i>Trabajador</div>
+    </div>
+    <div class="form-group"><label>Usuario</label><input id="login-user" placeholder="Ingrese usuario"></div>
+    <div class="form-group"><label>Contraseña</label><input id="login-pass" type="password" placeholder="Ingrese contraseña" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="btn btn-primary btn-full" onclick="doLogin()"><i class="ti ti-login"></i>Ingresar</button>
+    <p class="login-hint" id="login-hint">Admin: admin / admin123</p>
+  </div>
+</div>
+
+<div id="app-screen" class="app" style="display:none">
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h2><i class="ti ti-coffee" style="margin-right:6px;color:#D85A30"></i>Cafetería</h2>
+      <p>Sistema de gestión</p>
+    </div>
+    <div class="user-badge">
+      <div class="user-avatar" id="user-avatar"></div>
+      <div class="user-info">
+        <div class="uname" id="user-name"></div>
+        <div class="urole" id="user-role-label"></div>
+      </div>
+      <button class="btn-logout" onclick="logout()" title="Cerrar sesión"><i class="ti ti-logout" style="font-size:14px"></i></button>
+    </div>
+    <nav id="sidebar-nav" style="padding:8px 0;flex:1;overflow-y:auto"></nav>
+  </div>
+  <div class="main">
+    <div class="topbar">
+      <h1 id="panel-title">Dashboard</h1>
+      <span id="fecha" style="font-size:12px;color:#888"></span>
+    </div>
+    <div class="content">
+      <div class="panel active" id="p-dashboard"></div>
+      <div class="panel" id="p-clientes"></div>
+      <div class="panel" id="p-productos"></div>
+      <div class="panel" id="p-pedidos"></div>
+      <div class="panel" id="p-inventario"></div>
+      <div class="panel" id="p-ventas"></div>
+      <div class="panel" id="p-factura"></div>
+      <div class="panel" id="p-trabajadores"></div>
+      <div class="panel" id="p-anulaciones"></div>
+      <div class="panel" id="p-reporte"></div>
+      <div class="panel" id="p-configuracion"></div>
+    </div>
+  </div>
+</div>
+
+<!-- área de impresión oculta -->
+<div id="print-area"></div>
+
+<!-- Modal producto -->
+<div class="modal-bg" id="modal-prod">
+  <div class="modal">
+    <h3 id="modal-prod-title">Agregar producto</h3>
+    <div class="form-group"><label>Nombre del producto</label><input id="mp-nombre" placeholder="Ej: Té Verde"></div>
+    <div class="form-group"><label>Precio</label><input id="mp-precio" type="number" placeholder="Ej: 3500"></div>
+    <div class="form-group"><label>Stock inicial</label><input id="mp-stock" type="number" placeholder="Ej: 20"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-prod')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarProducto()"><i class="ti ti-check"></i>Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal trabajador -->
+<div class="modal-bg" id="modal-worker">
+  <div class="modal">
+    <h3><i class="ti ti-user-plus" style="color:#D85A30;margin-right:6px"></i>Agregar trabajador</h3>
+    <div class="form-group"><label>Nombre completo</label><input id="mw-nombre" placeholder="Ej: María López"></div>
+    <div class="form-group"><label>Usuario</label><input id="mw-user" placeholder="Ej: maria"></div>
+    <div class="form-group"><label>Contraseña</label><input id="mw-pass" type="password" placeholder="Mínimo 4 caracteres"></div>
+    <div class="form-group"><label>Cargo / Turno</label>
+      <select id="mw-cargo">
+        <option value="Cajero">Cajero</option>
+        <option value="Barista">Barista</option>
+        <option value="Mesero">Mesero</option>
+        <option value="Turno mañana">Turno mañana</option>
+        <option value="Turno tarde">Turno tarde</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-worker')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarTrabajador()"><i class="ti ti-check"></i>Guardar trabajador</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal anular -->
+<div class="modal-bg" id="modal-anular">
+  <div class="modal">
+    <h3><i class="ti ti-ban" style="color:#A32D2D;margin-right:6px"></i>Anular pedido</h3>
+    <div style="background:#FCEBEB;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;color:#A32D2D"><strong id="anular-info"></strong></div>
+    <div class="form-group">
+      <label>Motivo de anulación <span style="color:#A32D2D">*</span></label>
+      <select id="anular-motivo">
+        <option value="">— seleccionar motivo —</option>
+        <option value="Pedido equivocado">Pedido equivocado</option>
+        <option value="Cliente canceló">Cliente canceló</option>
+        <option value="Producto agotado">Producto agotado</option>
+        <option value="Error en cantidad">Error en cantidad</option>
+        <option value="Otro">Otro</option>
+      </select>
+    </div>
+    <div class="form-group" id="motivo-otro-wrap" style="display:none">
+      <label>Especifique el motivo</label>
+      <input id="anular-otro" placeholder="Describa el motivo...">
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-anular')">Cancelar</button>
+      <button class="btn btn-danger" onclick="confirmarAnulacion()"><i class="ti ti-ban"></i>Confirmar anulación</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DB = {
+  currentUser: null,
+  limiteAnulacion: 15,
+  trabajadores: [
+    {nombre:"Carlos Deluquez", usuario:"carlos", pass:"1234", cargo:"Barista",  rol:"worker"},
+    {nombre:"Laura Pérez",     usuario:"laura",  pass:"1234", cargo:"Cajero",   rol:"worker"}
+  ],
+  clientes:   [],
+  pedidos:    [],
+  anulaciones:[],
+  editingProd: null,
+  anulacionIdx: null,
+  inventario: [
+    {nombre:"Café Americano", precio:3500, stock:20},
+    {nombre:"Cappuccino",     precio:4500, stock:20},
+    {nombre:"Latte",          precio:5000, stock:20},
+    {nombre:"Jugo Natural",   precio:4000, stock:20},
+    {nombre:"Agua Mineral",   precio:2000, stock:20},
+    {nombre:"Croissant",      precio:3000, stock:20},
+    {nombre:"Sandwich",       precio:7000, stock:20},
+    {nombre:"Torta Choco.",   precio:6000, stock:20}
+  ]
+};
+const ICONS = ["ti-coffee","ti-coffee","ti-mug","ti-droplet","ti-droplet","ti-bread","ti-receipt","ti-cake"];
+const ADMIN  = {usuario:"admin", pass:"admin123", nombre:"Administrador", rol:"admin"};
+
+const NAV_ADMIN = [
+  {section:"General"},
+  {id:"dashboard",  icon:"ti-layout-dashboard", label:"Dashboard"},
+  {id:"clientes",   icon:"ti-users",            label:"Clientes"},
+  {id:"pedidos",    icon:"ti-shopping-cart",    label:"Pedidos"},
+  {id:"factura",    icon:"ti-file-invoice",     label:"Factura"},
+  {section:"Administración"},
+  {id:"productos",  icon:"ti-box",              label:"Productos"},
+  {id:"inventario", icon:"ti-clipboard-list",   label:"Inventario"},
+  {id:"ventas",     icon:"ti-chart-bar",        label:"Ventas"},
+  {id:"reporte",    icon:"ti-award",            label:"Reporte trabajadores"},
+  {id:"trabajadores",icon:"ti-id-badge",        label:"Trabajadores"},
+  {id:"anulaciones",icon:"ti-ban",              label:"Anulaciones"},
+  {id:"configuracion",icon:"ti-settings",       label:"Configuración"}
+];
+const NAV_WORKER = [
+  {section:"Mi turno"},
+  {id:"dashboard",  icon:"ti-layout-dashboard", label:"Dashboard"},
+  {id:"clientes",   icon:"ti-users",            label:"Clientes"},
+  {id:"pedidos",    icon:"ti-shopping-cart",    label:"Pedidos"},
+  {id:"factura",    icon:"ti-file-invoice",     label:"Factura"},
+  {id:"productos",  icon:"ti-box",              label:"Ver menú"},
+  {id:"anulaciones",icon:"ti-ban",              label:"Mis anulaciones"}
+];
+const TITLES = {dashboard:"Dashboard",clientes:"Clientes",productos:"Productos",pedidos:"Pedidos",inventario:"Inventario",ventas:"Ventas",factura:"Generar factura",trabajadores:"Trabajadores",anulaciones:"Anulaciones",reporte:"Reporte por trabajador",configuracion:"Configuración"};
+
+// ── utils ──────────────────────────────────────────────────────────────────
+function fmt(n){ return "$"+n.toLocaleString("es-CO"); }
+function toast(msg,type="ok"){
+  const t=document.getElementById("toast");
+  t.className="toast "+type;
+  t.innerHTML=`<i class="ti ${type==="ok"?"ti-check":"ti-alert-circle"}"></i>${msg}`;
+  t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2500);
+}
+function openModal(id){document.getElementById(id).classList.add("open");}
+function closeModal(id){document.getElementById(id).classList.remove("open");}
+function isAdmin(){return DB.currentUser&&DB.currentUser.rol==="admin";}
+function deniedHTML(mod){return`<div class="access-denied"><i class="ti ti-lock"></i><h3>Acceso restringido</h3><p>Solo el administrador puede ver ${mod}.</p></div>`;}
+
+// ── login ──────────────────────────────────────────────────────────────────
+let selectedRole="admin";
+function selectRole(r){
+  selectedRole=r;
+  document.getElementById("tab-admin").classList.toggle("active",r==="admin");
+  document.getElementById("tab-worker").classList.toggle("active",r==="worker");
+  document.getElementById("login-hint").textContent=r==="admin"?"Admin: admin / admin123":"Trabajador: carlos / 1234";
+  document.getElementById("login-user").value="";
+  document.getElementById("login-pass").value="";
+}
+function doLogin(){
+  const u=document.getElementById("login-user").value.trim();
+  const p=document.getElementById("login-pass").value;
+  let user=null;
+  if(selectedRole==="admin"){if(u===ADMIN.usuario&&p===ADMIN.pass)user=ADMIN;}
+  else user=DB.trabajadores.find(w=>w.usuario===u&&w.pass===p);
+  if(!user){toast("Usuario o contraseña incorrectos","err");return;}
+  DB.currentUser=user;
+  document.getElementById("login-screen").style.display="none";
+  document.getElementById("app-screen").style.display="flex";
+  buildSidebar(); setupPanels(); showPanel("dashboard");
+  document.getElementById("fecha").textContent=new Date().toLocaleDateString("es-CO",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+}
+function logout(){
+  DB.currentUser=null;
+  document.getElementById("app-screen").style.display="none";
+  document.getElementById("login-screen").style.display="flex";
+  document.getElementById("login-user").value="";
+  document.getElementById("login-pass").value="";
+  selectRole("admin");
+}
+
+// ── sidebar ────────────────────────────────────────────────────────────────
+function buildSidebar(){
+  const u=DB.currentUser;
+  const av=document.getElementById("user-avatar");
+  av.textContent=u.nombre.charAt(0).toUpperCase();
+  av.className="user-avatar "+(isAdmin()?"avatar-admin":"avatar-worker");
+  document.getElementById("user-name").textContent=u.nombre;
+  document.getElementById("user-role-label").textContent=isAdmin()?"Administrador":"Trabajador";
+  const nav=isAdmin()?NAV_ADMIN:NAV_WORKER;
+  document.getElementById("sidebar-nav").innerHTML=nav.map(item=>{
+    if(item.section)return`<div class="nav-section">${item.section}</div>`;
+    return`<div class="nav-item" id="nav-${item.id}" onclick="showPanel('${item.id}')"><i class="ti ${item.icon}"></i>${item.label}</div>`;
+  }).join("");
+}
+
+// ── navigation ────────────────────────────────────────────────────────────
+function showPanel(id){
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
+  document.getElementById("p-"+id).classList.add("active");
+  const el=document.getElementById("nav-"+id);
+  if(el)el.classList.add("active");
+  document.getElementById("panel-title").textContent=TITLES[id]||id;
+  const renders={dashboard:renderDashboard,productos:renderProductos,inventario:renderInventario,ventas:renderVentas,clientes:renderTablaClientes,trabajadores:renderTrabajadores,anulaciones:renderAnulaciones,reporte:renderReporte,configuracion:renderConfiguracion};
+  if(renders[id])renders[id]();
+  if(id==="pedidos"){populateSelects();renderTablaPedidos();}
+  if(id==="factura")populateFacClienteSelect();
+}
+
+// ── setup panels ──────────────────────────────────────────────────────────
+function setupPanels(){
+  // Dashboard
+  document.getElementById("p-dashboard").innerHTML=`
+    <div class="cards-grid" id="dash-cards"></div>
+    <div class="section-title">Últimos pedidos</div>
+    <div class="table-wrap">
+      <table><thead><tr><th>Cliente</th><th>Producto</th><th>Cant.</th><th>Subtotal</th><th>Tomado por</th><th>Estado</th></tr></thead>
+      <tbody id="dash-pedidos"></tbody></table>
+    </div>`;
+
+  // Clientes
+  document.getElementById("p-clientes").innerHTML=`
+    <div class="two-col">
+      <div>
+        <div class="section-title">Registrar cliente</div>
+        <div class="table-wrap" style="padding:20px">
+          <div class="form-group"><label>Nombre completo</label><input id="c-nombre" placeholder="Ej: Juan Pérez"></div>
+          <div class="form-group"><label>Cédula</label><input id="c-cedula" placeholder="Ej: 1002345678"></div>
+          <div class="form-group"><label>Teléfono</label><input id="c-tel" placeholder="Ej: 3001234567"></div>
+          <button class="btn btn-primary btn-full" onclick="registrarCliente()"><i class="ti ti-user-plus"></i>Registrar cliente</button>
+        </div>
+      </div>
+      <div>
+        <div class="section-title">Clientes registrados</div>
+        <div class="table-wrap">
+          <div class="search-bar"><i class="ti ti-search"></i><input id="search-clientes" placeholder="Buscar por nombre o cédula..." oninput="filtrarClientes()"></div>
+          <table><thead><tr><th>Nombre</th><th>Cédula</th><th>Teléfono</th></tr></thead>
+          <tbody id="tabla-clientes"></tbody></table>
+        </div>
+      </div>
+    </div>`;
+
+  // Productos
+  document.getElementById("p-productos").innerHTML=`
+    <div class="section-title">
+      <span>Menú de productos</span>
+      ${isAdmin()?`<button class="btn btn-primary btn-sm" onclick="abrirModalProd(null)"><i class="ti ti-plus"></i>Agregar producto</button>`:""}
+    </div>
+    <div class="prod-grid" id="prod-grid"></div>`;
+
+  // Pedidos
+  document.getElementById("p-pedidos").innerHTML=`
+    <div class="two-col">
+      <div>
+        <div class="section-title">Nuevo pedido</div>
+        <div class="table-wrap" style="padding:20px">
+          <div class="form-group"><label>Cliente</label><select id="ped-cliente"><option value="">— seleccionar —</option></select></div>
+          <div class="form-group"><label>Producto</label><select id="ped-producto" onchange="updatePreview()"><option value="">— seleccionar —</option></select></div>
+          <div class="form-group"><label>Cantidad</label><input type="number" id="ped-cant" value="1" min="1" oninput="updatePreview()"></div>
+          <div class="resumen-box" id="ped-resumen">
+            <div style="font-size:12px;color:#993C1D;font-weight:500">Resumen del pedido</div>
+            <div style="font-size:13px;margin-top:6px;color:#555" id="ped-desc"></div>
+            <div class="total" id="ped-total"></div>
+          </div>
+          <button class="btn btn-primary btn-full" style="margin-top:14px" onclick="realizarPedido()"><i class="ti ti-check"></i>Confirmar pedido</button>
+        </div>
+      </div>
+      <div>
+        <div class="section-title">Pedidos del día</div>
+        <div class="table-wrap">
+          <div class="search-bar"><i class="ti ti-search"></i><input id="search-pedidos" placeholder="Buscar por cliente o producto..." oninput="filtrarPedidos()"></div>
+          <table><thead><tr><th>Cliente</th><th>Producto</th><th>Cant.</th><th>Total</th><th>Estado</th><th>Acción</th></tr></thead>
+          <tbody id="tabla-pedidos"></tbody></table>
+        </div>
+      </div>
+    </div>`;
+
+  // Inventario
+  document.getElementById("p-inventario").innerHTML=isAdmin()?`
+    <div class="section-title">Stock actual</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Producto</th><th>Precio</th><th>Stock</th><th>Estado</th></tr></thead>
+      <tbody id="tabla-inv"></tbody>
+    </table></div>`:deniedHTML("el inventario");
+
+  // Ventas
+  document.getElementById("p-ventas").innerHTML=isAdmin()?`
+    <div class="cards-grid" id="ventas-cards"></div>
+    <div class="section-title">Detalle de ventas</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Trabajador</th><th>Cliente</th><th>Producto</th><th>Cant.</th><th>Subtotal</th></tr></thead>
+      <tbody id="tabla-ventas"></tbody>
+    </table></div>`:deniedHTML("ventas");
+
+  // Factura
+  document.getElementById("p-factura").innerHTML=`
+    <div style="max-width:520px;margin:0 auto">
+      <div class="table-wrap" style="padding:20px;margin-bottom:20px">
+        <div class="form-group"><label>Seleccionar cliente</label>
+          <select id="fac-cliente"><option value="">— seleccionar cliente —</option></select>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="generarFactura()"><i class="ti ti-file-invoice"></i>Generar factura</button>
+      </div>
+      <div id="factura-output"></div>
+    </div>`;
+
+  // Trabajadores
+  document.getElementById("p-trabajadores").innerHTML=isAdmin()?`
+    <div class="section-title">
+      <span>Trabajadores registrados</span>
+      <button class="btn btn-primary btn-sm" onclick="openModal('modal-worker')"><i class="ti ti-plus"></i>Agregar trabajador</button>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Nombre</th><th>Usuario</th><th>Cargo</th><th>Rol</th><th>Acciones</th></tr></thead>
+      <tbody id="tabla-trabajadores"></tbody>
+    </table></div>`:deniedHTML("trabajadores");
+
+  // Anulaciones
+  document.getElementById("p-anulaciones").innerHTML=`
+    <div class="section-title"><span>${isAdmin()?"Historial de anulaciones":"Mis anulaciones"}</span></div>
+    <div id="anulaciones-cards" class="cards-grid" style="grid-template-columns:repeat(3,1fr)"></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>Fecha/hora</th><th>Cliente</th><th>Producto</th><th>Cant.</th><th>Valor</th><th>Motivo</th>${isAdmin()?"<th>Anulado por</th>":""}</tr></thead>
+      <tbody id="tabla-anulaciones"></tbody>
+    </table></div>`;
+
+  // Configuracion
+  document.getElementById("p-configuracion").innerHTML=isAdmin()?`
+    <div style="max-width:520px">
+      <div class="section-title">Reglas de anulación</div>
+      <div class="table-wrap" style="padding:24px;margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:8px">
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:600;color:#1a1a18;margin-bottom:4px">Tiempo límite para anular un pedido</div>
+            <div style="font-size:12px;color:#888">Los trabajadores solo podrán anular dentro de este tiempo desde que se registró el pedido. El administrador puede anular en cualquier momento.</div>
+          </div>
+          <div style="text-align:center;flex-shrink:0">
+            <div style="font-size:32px;font-weight:700;color:#D85A30" id="limite-display">${DB.limiteAnulacion}</div>
+            <div style="font-size:11px;color:#888">minutos</div>
+          </div>
+        </div>
+        <input type="range" id="limite-slider" min="5" max="60" step="5" value="${DB.limiteAnulacion}"
+          oninput="document.getElementById('limite-display').textContent=this.value"
+          style="width:100%;margin:16px 0">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:#bbb;margin-bottom:20px">
+          <span>5 min</span><span>15 min</span><span>30 min</span><span>45 min</span><span>60 min</span>
+        </div>
+        <button class="btn btn-primary" onclick="guardarConfiguracion()"><i class="ti ti-check"></i>Guardar configuración</button>
+      </div>
+      <div class="table-wrap" style="padding:20px">
+        <div style="font-size:13px;font-weight:600;color:#1a1a18;margin-bottom:12px"><i class="ti ti-info-circle" style="color:#D85A30;margin-right:6px"></i>¿Cómo funciona el límite?</div>
+        <div style="font-size:13px;color:#555;line-height:1.8">
+          <div style="padding:6px 0;border-bottom:1px solid #f5f5f0">⏱ El cronómetro inicia desde el momento exacto en que se registra el pedido.</div>
+          <div style="padding:6px 0;border-bottom:1px solid #f5f5f0">🟡 Cuando quedan 5 minutos o menos, el botón de anular muestra el tiempo restante en amarillo.</div>
+          <div style="padding:6px 0;border-bottom:1px solid #f5f5f0">🔒 Al vencer el tiempo, el botón desaparece y aparece un candado. El pedido no se puede tocar.</div>
+          <div style="padding:6px 0">🛡 El administrador puede anular en cualquier momento, pero queda registrado en el historial de anulaciones.</div>
+        </div>
+      </div>
+    </div>`:deniedHTML("la configuración");
+
+  // Reporte trabajadores
+  document.getElementById("p-reporte").innerHTML=isAdmin()?`
+    <div class="section-title">Rendimiento por trabajador</div>
+    <div class="reporte-grid" id="reporte-grid"></div>
+    <div class="section-title" style="margin-top:8px">Ranking de ventas</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>Trabajador</th><th>Cargo</th><th>Pedidos</th><th>Unidades</th><th>Total vendido</th><th>Anulaciones</th></tr></thead>
+      <tbody id="tabla-reporte"></tbody>
+    </table></div>`:deniedHTML("el reporte");
+}
+
+// ── dashboard ─────────────────────────────────────────────────────────────
+function renderDashboard(){
+  const activos=DB.pedidos.filter(p=>p.estado==="activo");
+  const total=activos.reduce((a,p)=>a+p.subtotal,0);
+  const misPed=isAdmin()?DB.pedidos:DB.pedidos.filter(p=>p.trabajador===DB.currentUser.nombre);
+  const misTot=misPed.filter(p=>p.estado==="activo").reduce((a,p)=>a+p.subtotal,0);
+  const cards=isAdmin()
+    ?[{label:"Clientes registrados",value:DB.clientes.length,icon:"ti-users"},
+      {label:"Pedidos activos",value:activos.length,icon:"ti-shopping-cart"},
+      {label:"Total ventas",value:fmt(total),icon:"ti-cash"},
+      {label:"Trabajadores",value:DB.trabajadores.length,icon:"ti-id-badge"}]
+    :[{label:"Clientes registrados",value:DB.clientes.length,icon:"ti-users"},
+      {label:"Mis pedidos hoy",value:misPed.length,icon:"ti-shopping-cart"},
+      {label:"Mis ventas hoy",value:fmt(misTot),icon:"ti-cash"},
+      {label:"Productos disponibles",value:DB.inventario.filter(p=>p.stock>0).length,icon:"ti-box"}];
+  document.getElementById("dash-cards").innerHTML=cards.map(c=>
+    `<div class="metric-card"><div class="label"><i class="ti ${c.icon}"></i>${c.label}</div><div class="value">${c.value}</div></div>`).join("");
+  const fuente=isAdmin()?[...DB.pedidos].reverse().slice(0,6):[...misPed].reverse().slice(0,6);
+  const tbody=document.getElementById("dash-pedidos");
+  if(!fuente.length){tbody.innerHTML=`<tr><td colspan="6"><div class="empty-state"><i class="ti ti-shopping-cart-off"></i>Sin pedidos aún</div></td></tr>`;return;}
+  tbody.innerHTML=fuente.map(p=>{
+    const badge=p.estado==="activo"
+      ?`<span class="badge badge-activo"><i class="ti ti-check" style="font-size:10px;margin-right:2px"></i>Confirmado</span>`
+      :`<span class="badge badge-anulado"><i class="ti ti-ban" style="font-size:10px;margin-right:2px"></i>Anulado</span>`;
+    return`<tr style="${p.estado==="anulado"?"opacity:0.5":""}"><td>${p.cliente}</td><td>${p.producto}</td><td>${p.cantidad}</td><td style="color:#D85A30;font-weight:600">${fmt(p.subtotal)}</td><td>${p.trabajador}</td><td>${badge}</td></tr>`;
+  }).join("");
+}
+
+// ── clientes ──────────────────────────────────────────────────────────────
+function registrarCliente(){
+  const n=document.getElementById("c-nombre").value.trim();
+  const c=document.getElementById("c-cedula").value.trim();
+  const t=document.getElementById("c-tel").value.trim();
+  if(!n||!c||!t){toast("Complete todos los campos","err");return;}
+  if(DB.clientes.find(x=>x.cedula===c)){toast("Ya existe un cliente con esa cédula","err");return;}
+  DB.clientes.push({nombre:n,cedula:c,telefono:t});
+  ["c-nombre","c-cedula","c-tel"].forEach(id=>document.getElementById(id).value="");
+  renderTablaClientes();
+  toast("Cliente registrado correctamente");
+}
+function renderTablaClientes(lista){
+  const tbody=document.getElementById("tabla-clientes");
+  if(!tbody)return;
+  const datos=lista||DB.clientes;
+  if(!datos.length){tbody.innerHTML=`<tr><td colspan="3"><div class="empty-state"><i class="ti ti-users-off"></i>Sin clientes registrados</div></td></tr>`;return;}
+  tbody.innerHTML=datos.map(c=>`<tr><td>${c.nombre}</td><td>${c.cedula}</td><td>${c.telefono}</td></tr>`).join("");
+}
+function filtrarClientes(){
+  const q=document.getElementById("search-clientes").value.toLowerCase();
+  renderTablaClientes(DB.clientes.filter(c=>c.nombre.toLowerCase().includes(q)||c.cedula.includes(q)));
+}
+
+// ── productos ─────────────────────────────────────────────────────────────
+function renderProductos(){
+  const grid=document.getElementById("prod-grid");
+  if(!grid)return;
+  grid.innerHTML=DB.inventario.map((p,i)=>{
+    const icon=ICONS[i]||"ti-box";
+    const btns=isAdmin()?`<div class="prod-actions">
+      <button class="btn btn-sm" onclick="abrirModalProd(${i})" style="flex:1"><i class="ti ti-edit"></i>Editar</button>
+      <button class="btn btn-danger btn-sm" onclick="eliminarProducto(${i})"><i class="ti ti-trash"></i></button>
+    </div>`:"";
+    return`<div class="prod-card"><div class="prod-icon"><i class="ti ${icon}"></i></div>
+      <div class="prod-name">${p.nombre}</div>
+      <div class="prod-price">${fmt(p.precio)}</div>
+      <div class="prod-stock">Stock: ${p.stock} unidades</div>${btns}</div>`;
+  }).join("");
+}
+function abrirModalProd(idx){
+  DB.editingProd=idx;
+  document.getElementById("modal-prod-title").textContent=idx===null?"Agregar producto":"Editar producto";
+  if(idx!==null){const p=DB.inventario[idx];document.getElementById("mp-nombre").value=p.nombre;document.getElementById("mp-precio").value=p.precio;document.getElementById("mp-stock").value=p.stock;}
+  else{["mp-nombre","mp-precio","mp-stock"].forEach(id=>document.getElementById(id).value="");}
+  openModal("modal-prod");
+}
+function guardarProducto(){
+  const n=document.getElementById("mp-nombre").value.trim();
+  const pr=parseInt(document.getElementById("mp-precio").value);
+  const st=parseInt(document.getElementById("mp-stock").value);
+  if(!n||isNaN(pr)||isNaN(st)||pr<=0||st<0){toast("Complete los campos correctamente","err");return;}
+  if(DB.editingProd!==null){DB.inventario[DB.editingProd]={nombre:n,precio:pr,stock:st};toast("Producto actualizado");}
+  else{DB.inventario.push({nombre:n,precio:pr,stock:st});ICONS.push("ti-box");toast("Producto agregado");}
+  closeModal("modal-prod"); renderProductos();
+}
+function eliminarProducto(idx){
+  if(!confirm(`¿Eliminar "${DB.inventario[idx].nombre}"?`))return;
+  DB.inventario.splice(idx,1); ICONS.splice(idx,1); renderProductos(); toast("Producto eliminado");
+}
+
+// ── pedidos ───────────────────────────────────────────────────────────────
+function populateSelects(){
+  const sc=document.getElementById("ped-cliente");
+  const sp=document.getElementById("ped-producto");
+  if(!sc||!sp)return;
+  sc.innerHTML=`<option value="">— seleccionar —</option>`+DB.clientes.map((c,i)=>`<option value="${i}">${c.nombre}</option>`).join("");
+  sp.innerHTML=`<option value="">— seleccionar —</option>`+DB.inventario.map((p,i)=>`<option value="${i}">${p.nombre} — ${fmt(p.precio)}</option>`).join("");
+}
+function updatePreview(){
+  const pi=document.getElementById("ped-producto").value;
+  const cant=parseInt(document.getElementById("ped-cant").value)||1;
+  const res=document.getElementById("ped-resumen");
+  if(pi===""){res.style.display="none";return;}
+  const prod=DB.inventario[pi];
+  res.style.display="block";
+  document.getElementById("ped-desc").textContent=`${prod.nombre} × ${cant}`;
+  document.getElementById("ped-total").textContent=fmt(prod.precio*cant);
+}
+function realizarPedido(){
+  const ci=document.getElementById("ped-cliente").value;
+  const pi=document.getElementById("ped-producto").value;
+  const cant=parseInt(document.getElementById("ped-cant").value)||0;
+  if(ci===""||pi===""){toast("Seleccione cliente y producto","err");return;}
+  if(cant<=0){toast("Cantidad inválida","err");return;}
+  const prod=DB.inventario[pi];
+  if(prod.stock<cant){toast(`Stock insuficiente (disponible: ${prod.stock})`,"err");return;}
+  prod.stock-=cant;
+  DB.pedidos.push({id:Date.now(),cliente:DB.clientes[ci].nombre,cedula:DB.clientes[ci].cedula,
+    producto:prod.nombre,cantidad:cant,precio:prod.precio,subtotal:prod.precio*cant,
+    trabajador:DB.currentUser.nombre,estado:"activo",
+    hora:new Date().toLocaleTimeString("es-CO",{hour:"2-digit",minute:"2-digit"})});
+  document.getElementById("ped-cliente").value="";
+  document.getElementById("ped-producto").value="";
+  document.getElementById("ped-cant").value=1;
+  document.getElementById("ped-resumen").style.display="none";
+  renderTablaPedidos(); toast("Pedido registrado correctamente");
+}
+function renderTablaPedidos(lista){
+  const tbody=document.getElementById("tabla-pedidos");
+  if(!tbody)return;
+  const base=isAdmin()?DB.pedidos:DB.pedidos.filter(p=>p.trabajador===DB.currentUser.nombre);
+  const datos=lista!==undefined?lista:base;
+  if(!datos.length){tbody.innerHTML=`<tr><td colspan="6"><div class="empty-state">Sin pedidos aún</div></td></tr>`;return;}
+  tbody.innerHTML=datos.map(p=>{
+    const realIdx=DB.pedidos.indexOf(p);
+    const badge=p.estado==="activo"
+      ?`<span class="badge badge-activo"><i class="ti ti-check" style="font-size:10px;margin-right:2px"></i>Confirmado</span>`
+      :`<span class="badge badge-anulado"><i class="ti ti-ban" style="font-size:10px;margin-right:2px"></i>Anulado</span>`;
+    const canAnular=puedeAnular(p);
+    const mins=minutosDesde(p.id);
+    const rest=tiempoRestante(p);
+    let btnAnular;
+    if(p.estado==="anulado"){
+      btnAnular=`<span style="font-size:11px;color:#bbb">—</span>`;
+    } else if(canAnular){
+      const timerLabel=(!isAdmin()&&rest<=5)?`<span style="font-size:10px;color:#854F0B;margin-left:4px">${rest}min</span>`:"";
+      btnAnular=`<button class="btn btn-danger btn-sm" onclick="abrirAnulacion(${realIdx})"><i class="ti ti-ban"></i>Anular</button>${timerLabel}`;
+    } else {
+      btnAnular=`<span style="font-size:11px;color:#bbb" title="Tiempo límite superado (${mins} min)"><i class="ti ti-lock" style="font-size:12px;color:#ddd"></i> Expirado</span>`;
+    }
+    return`<tr class="${p.estado==="anulado"?"row-anulado":""}"><td>${p.cliente}</td><td>${p.producto}</td><td>${p.cantidad}</td><td style="color:#D85A30;font-weight:600">${fmt(p.subtotal)}</td><td>${badge}</td><td>${btnAnular}</td></tr>`;
+  }).join("");
+}
+function filtrarPedidos(){
+  const q=document.getElementById("search-pedidos").value.toLowerCase();
+  const base=isAdmin()?DB.pedidos:DB.pedidos.filter(p=>p.trabajador===DB.currentUser.nombre);
+  renderTablaPedidos(base.filter(p=>p.cliente.toLowerCase().includes(q)||p.producto.toLowerCase().includes(q)));
+}
+
+// ── inventario ────────────────────────────────────────────────────────────
+function renderInventario(){
+  const tbody=document.getElementById("tabla-inv");
+  if(!tbody)return;
+  tbody.innerHTML=DB.inventario.map(p=>{
+    const badge=p.stock>10?`<span class="badge badge-success">OK</span>`:p.stock>3?`<span class="badge badge-warn">Bajo</span>`:`<span class="badge badge-danger">Crítico</span>`;
+    return`<tr><td>${p.nombre}</td><td>${fmt(p.precio)}</td><td>${p.stock}</td><td>${badge}</td></tr>`;
+  }).join("");
+}
+
+// ── ventas ────────────────────────────────────────────────────────────────
+function renderVentas(){
+  const vc=document.getElementById("ventas-cards");
+  if(!vc)return;
+  const activos=DB.pedidos.filter(p=>p.estado==="activo");
+  const total=activos.reduce((a,p)=>a+p.subtotal,0);
+  const unids=activos.reduce((a,p)=>a+p.cantidad,0);
+  const prom=activos.length?Math.round(total/activos.length):0;
+  vc.innerHTML=`
+    <div class="metric-card"><div class="label"><i class="ti ti-cash"></i>Total recaudado</div><div class="value" style="color:#D85A30">${fmt(total)}</div></div>
+    <div class="metric-card"><div class="label"><i class="ti ti-shopping-cart"></i>Pedidos activos</div><div class="value">${activos.length}</div></div>
+    <div class="metric-card"><div class="label"><i class="ti ti-package"></i>Unidades vendidas</div><div class="value">${unids}</div></div>
+    <div class="metric-card"><div class="label"><i class="ti ti-receipt"></i>Ticket promedio</div><div class="value">${fmt(prom)}</div></div>`;
+  const tbody=document.getElementById("tabla-ventas");
+  if(!activos.length){tbody.innerHTML=`<tr><td colspan="5"><div class="empty-state"><i class="ti ti-chart-bar-off"></i>Sin ventas registradas</div></td></tr>`;return;}
+  tbody.innerHTML=activos.map(p=>`<tr><td>${p.trabajador}</td><td>${p.cliente}</td><td>${p.producto}</td><td>${p.cantidad}</td><td style="color:#D85A30;font-weight:600">${fmt(p.subtotal)}</td></tr>`).join("");
+}
+
+// ── factura ───────────────────────────────────────────────────────────────
+function populateFacClienteSelect(){
+  const s=document.getElementById("fac-cliente");
+  if(!s)return;
+  s.innerHTML=`<option value="">— seleccionar cliente —</option>`+DB.clientes.map((c,i)=>`<option value="${i}">${c.nombre} (${c.cedula})</option>`).join("");
+}
+function generarFactura(){
+  const ci=document.getElementById("fac-cliente").value;
+  if(ci===""){toast("Seleccione un cliente","err");return;}
+  const cliente=DB.clientes[ci];
+  const pedidos=DB.pedidos.filter(p=>p.cedula===cliente.cedula&&p.estado==="activo");
+  if(!pedidos.length){document.getElementById("factura-output").innerHTML=`<div class="empty-state"><i class="ti ti-file-off"></i>Este cliente no tiene pedidos activos</div>`;return;}
+  const total=pedidos.reduce((a,p)=>a+p.subtotal,0);
+  const filas=pedidos.map(p=>`<tr><td>${p.producto}</td><td style="text-align:center">${p.cantidad}</td><td style="text-align:right">${fmt(p.precio)}</td><td style="text-align:right;font-weight:600">${fmt(p.subtotal)}</td></tr>`).join("");
+  const fecha=new Date().toLocaleDateString("es-CO",{year:"numeric",month:"long",day:"numeric"});
+  const html=`<div class="factura-box" id="factura-contenido">
+    <div class="factura-header">
+      <h2><i class="ti ti-coffee" style="margin-right:6px"></i>Cafetería</h2>
+      <p>Factura de venta — ${fecha}</p>
+    </div>
+    <table style="font-size:13px;margin-bottom:4px;width:100%">
+      <tr><td style="color:#888;padding:4px 0">Cliente</td><td style="text-align:right;padding:4px 0;font-weight:500">${cliente.nombre}</td></tr>
+      <tr><td style="color:#888;padding:4px 0">Cédula</td><td style="text-align:right;padding:4px 0">${cliente.cedula}</td></tr>
+      <tr><td style="color:#888;padding:4px 0">Teléfono</td><td style="text-align:right;padding:4px 0">${cliente.telefono}</td></tr>
+    </table>
+    <div style="border-top:1px solid #eee;margin:14px 0"></div>
+    <table style="font-size:13px;width:100%">
+      <thead><tr style="background:#fafaf8"><th style="padding:8px 0">Producto</th><th style="text-align:center">Cant.</th><th style="text-align:right">Precio</th><th style="text-align:right">Subtotal</th></tr></thead>
+      <tbody>${filas}</tbody>
+    </table>
+    <div class="factura-total"><div class="lbl">TOTAL A PAGAR</div><div class="amt">${fmt(total)}</div></div>
+    <p style="text-align:center;font-size:12px;color:#aaa;margin-top:16px">¡Gracias por su visita!</p>
+  </div>
+  <div class="factura-actions">
+    <button class="btn" onclick="imprimirFactura()"><i class="ti ti-printer"></i>Imprimir factura</button>
+    <button class="btn btn-primary" onclick="copiarFactura('${cliente.nombre}','${fmt(total)}')"><i class="ti ti-copy"></i>Copiar resumen</button>
+  </div>`;
+  document.getElementById("factura-output").innerHTML=html;
+}
+function imprimirFactura(){
+  const contenido=document.getElementById("factura-contenido");
+  if(!contenido){toast("Primero genera una factura","err");return;}
+  const pa=document.getElementById("print-area");
+  pa.innerHTML=contenido.outerHTML;
+  window.print();
+  pa.innerHTML="";
+}
+function copiarFactura(nombre,total){
+  const txt=`CAFETERÍA\nCliente: ${nombre}\nTotal: ${total}\nFecha: ${new Date().toLocaleDateString("es-CO")}`;
+  navigator.clipboard.writeText(txt).then(()=>toast("Resumen copiado al portapapeles")).catch(()=>toast("No se pudo copiar","err"));
+}
+
+// ── trabajadores ──────────────────────────────────────────────────────────
+function guardarTrabajador(){
+  const n=document.getElementById("mw-nombre").value.trim();
+  const u=document.getElementById("mw-user").value.trim();
+  const p=document.getElementById("mw-pass").value;
+  const cargo=document.getElementById("mw-cargo").value;
+  if(!n||!u||!p){toast("Complete todos los campos","err");return;}
+  if(p.length<4){toast("La contraseña debe tener mínimo 4 caracteres","err");return;}
+  if(DB.trabajadores.find(w=>w.usuario===u)){toast("Ese usuario ya existe","err");return;}
+  DB.trabajadores.push({nombre:n,usuario:u,pass:p,cargo,rol:"worker"});
+  ["mw-nombre","mw-user","mw-pass"].forEach(id=>document.getElementById(id).value="");
+  closeModal("modal-worker"); renderTrabajadores(); toast("Trabajador registrado correctamente");
+}
+function renderTrabajadores(){
+  const tbody=document.getElementById("tabla-trabajadores");
+  if(!tbody)return;
+  if(!DB.trabajadores.length){tbody.innerHTML=`<tr><td colspan="5"><div class="empty-state"><i class="ti ti-users-off"></i>Sin trabajadores registrados</div></td></tr>`;return;}
+  tbody.innerHTML=DB.trabajadores.map((w,i)=>`<tr>
+    <td>${w.nombre}</td>
+    <td><code style="background:#f5f5f0;padding:2px 8px;border-radius:4px;font-size:12px">${w.usuario}</code></td>
+    <td style="font-size:12px;color:#888">${w.cargo||"—"}</td>
+    <td><span class="badge badge-worker">Trabajador</span></td>
+    <td><button class="btn btn-danger btn-sm" onclick="eliminarTrabajador(${i})"><i class="ti ti-trash"></i>Eliminar</button></td>
+  </tr>`).join("");
+}
+function eliminarTrabajador(idx){
+  if(!confirm(`¿Eliminar a "${DB.trabajadores[idx].nombre}"?`))return;
+  DB.trabajadores.splice(idx,1); renderTrabajadores(); toast("Trabajador eliminado");
+}
+
+// ── anulaciones ───────────────────────────────────────────────────────────
+function abrirAnulacion(idx){
+  DB.anulacionIdx=idx;
+  const p=DB.pedidos[idx];
+  document.getElementById("anular-info").textContent=`${p.producto} × ${p.cantidad}  —  ${fmt(p.subtotal)}  (${p.cliente})`;
+  document.getElementById("anular-motivo").value="";
+  document.getElementById("anular-otro").value="";
+  document.getElementById("motivo-otro-wrap").style.display="none";
+  openModal("modal-anular");
+}
+document.addEventListener("change",function(e){
+  if(e.target.id==="anular-motivo")
+    document.getElementById("motivo-otro-wrap").style.display=e.target.value==="Otro"?"block":"none";
+});
+function confirmarAnulacion(){
+  const motivoSel=document.getElementById("anular-motivo").value;
+  const motivoOtro=document.getElementById("anular-otro").value.trim();
+  if(!motivoSel){toast("Seleccione un motivo","err");return;}
+  if(motivoSel==="Otro"&&!motivoOtro){toast("Especifique el motivo","err");return;}
+  const motivo=motivoSel==="Otro"?motivoOtro:motivoSel;
+  const p=DB.pedidos[DB.anulacionIdx];
+  const prod=DB.inventario.find(inv=>inv.nombre===p.producto);
+  if(prod)prod.stock+=p.cantidad;
+  p.estado="anulado";
+  DB.anulaciones.push({fecha:new Date().toLocaleDateString("es-CO"),hora:new Date().toLocaleTimeString("es-CO",{hour:"2-digit",minute:"2-digit"}),
+    cliente:p.cliente,producto:p.producto,cantidad:p.cantidad,valor:p.subtotal,
+    motivo,anuladoPor:DB.currentUser.nombre,pedidoOrigDe:p.trabajador});
+  closeModal("modal-anular"); renderTablaPedidos(); toast("Pedido anulado — stock restaurado");
+}
+function renderAnulaciones(){
+  const cards=document.getElementById("anulaciones-cards");
+  const lista=isAdmin()?DB.anulaciones:DB.anulaciones.filter(a=>a.anuladoPor===DB.currentUser.nombre);
+  if(cards){
+    const tv=lista.reduce((a,x)=>a+x.valor,0);
+    cards.innerHTML=`
+      <div class="metric-card"><div class="label"><i class="ti ti-ban"></i>Total anulaciones</div><div class="value">${lista.length}</div></div>
+      <div class="metric-card"><div class="label"><i class="ti ti-cash"></i>Valor anulado</div><div class="value" style="color:#A32D2D">${fmt(tv)}</div></div>
+      <div class="metric-card"><div class="label"><i class="ti ti-rotate-clockwise"></i>Unidades restauradas</div><div class="value" style="color:#3B6D11">${lista.reduce((a,x)=>a+x.cantidad,0)}</div></div>`;
+  }
+  const tbody=document.getElementById("tabla-anulaciones");
+  if(!tbody)return;
+  if(!lista.length){tbody.innerHTML=`<tr><td colspan="${isAdmin()?8:7}"><div class="empty-state"><i class="ti ti-circle-check"></i>Sin anulaciones registradas</div></td></tr>`;return;}
+  tbody.innerHTML=[...lista].reverse().map((a,i)=>`<tr>
+    <td style="color:#aaa;font-size:12px">#${lista.length-i}</td>
+    <td style="font-size:12px;color:#888">${a.fecha} ${a.hora}</td>
+    <td>${a.cliente}</td><td>${a.producto}</td><td>${a.cantidad}</td>
+    <td style="color:#A32D2D;font-weight:600">${fmt(a.valor)}</td>
+    <td><span class="motivo-tag">${a.motivo}</span></td>
+    ${isAdmin()?`<td style="font-size:12px">${a.anuladoPor}</td>`:""}
+  </tr>`).join("");
+}
+
+function minutosDesde(timestamp){
+  return Math.floor((Date.now()-timestamp)/60000);
+}
+function puedeAnular(p){
+  if(p.estado!=="activo") return false;
+  const mins=minutosDesde(p.id);
+  if(isAdmin()) return true; // admin siempre puede
+  return mins<=DB.limiteAnulacion;
+}
+function tiempoRestante(p){
+  const mins=minutosDesde(p.id);
+  const rest=DB.limiteAnulacion-mins;
+  return rest;
+}
+
+// ── configuracion ─────────────────────────────────────────────────────────
+function renderConfiguracion(){
+  const slider=document.getElementById("limite-slider");
+  const display=document.getElementById("limite-display");
+  if(slider)slider.value=DB.limiteAnulacion;
+  if(display)display.textContent=DB.limiteAnulacion;
+}
+function guardarConfiguracion(){
+  const val=parseInt(document.getElementById("limite-slider").value);
+  DB.limiteAnulacion=val;
+  toast(`Límite actualizado a ${val} minutos`);
+}
+
+function renderReporte(){
+  const grid=document.getElementById("reporte-grid");
+  const tbody=document.getElementById("tabla-reporte");
+  if(!grid||!tbody)return;
+
+  const stats=DB.trabajadores.map(w=>{
+    const peds=DB.pedidos.filter(p=>p.trabajador===w.nombre&&p.estado==="activo");
+    const anuls=DB.anulaciones.filter(a=>a.anuladoPor===w.nombre);
+    const total=peds.reduce((a,p)=>a+p.subtotal,0);
+    const unids=peds.reduce((a,p)=>a+p.cantidad,0);
+    return{...w,pedidos:peds.length,unidades:unids,total,anulaciones:anuls.length};
+  }).sort((a,b)=>b.total-a.total);
+
+  grid.innerHTML=stats.map(w=>`
+    <div class="reporte-card">
+      <div class="rname"><div class="avatar">${w.nombre.charAt(0)}</div>${w.nombre}</div>
+      <div class="reporte-stat"><span class="sk">Cargo</span><span class="sv">${w.cargo||"—"}</span></div>
+      <div class="reporte-stat"><span class="sk">Pedidos confirmados</span><span class="sv">${w.pedidos}</span></div>
+      <div class="reporte-stat"><span class="sk">Unidades vendidas</span><span class="sv">${w.unidades}</span></div>
+      <div class="reporte-stat"><span class="sk">Total vendido</span><span class="sv" style="color:#D85A30">${fmt(w.total)}</span></div>
+      <div class="reporte-stat"><span class="sk">Anulaciones</span><span class="sv" style="color:${w.anulaciones>0?"#A32D2D":"#3B6D11"}">${w.anulaciones}</span></div>
+    </div>`).join("");
+
+  if(!stats.length){tbody.innerHTML=`<tr><td colspan="7"><div class="empty-state"><i class="ti ti-users-off"></i>Sin datos</div></td></tr>`;return;}
+  tbody.innerHTML=stats.map((w,i)=>`<tr>
+    <td style="color:#aaa;font-weight:600">${i===0?"🥇":i===1?"🥈":i===2?"🥉":i+1}</td>
+    <td style="font-weight:500">${w.nombre}</td>
+    <td style="font-size:12px;color:#888">${w.cargo||"—"}</td>
+    <td>${w.pedidos}</td>
+    <td>${w.unidades}</td>
+    <td style="color:#D85A30;font-weight:600">${fmt(w.total)}</td>
+    <td><span class="badge ${w.anulaciones>2?"badge-danger":w.anulaciones>0?"badge-warn":"badge-success"}">${w.anulaciones}</span></td>
+  </tr>`).join("");
+}
+
+document.getElementById("fecha").textContent=new Date().toLocaleDateString("es-CO",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+</script>
+</body>
+</html>
